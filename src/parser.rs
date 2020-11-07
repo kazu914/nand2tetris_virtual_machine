@@ -33,6 +33,17 @@ impl Parser {
         }
     }
 
+    pub fn advance(&mut self) {
+        if self.has_more_commands {
+            self.clear();
+            let command = self.commands[self.index].as_str();
+            let command_type = Parser::classify_command(command);
+            self.command_type = Some(command_type);
+            self.index += 1;
+            self.has_more_commands = self.commands.len() > self.index;
+        }
+    }
+
     fn clear(&mut self) {
         self.command_type = None;
         self.arg1 = None;
@@ -124,6 +135,24 @@ mod test {
         assert_eq!(parer.command_type, None);
         assert_eq!(parer.arg1, None);
         assert_eq!(parer.arg2, None);
+    }
+
+    #[test]
+    fn parer_advance() {
+        let original_commands = vec![
+            "//this is comment line".to_string(),
+            "push constant 7 // here also comment".to_string(),
+            "   add    //whitespace should be trimmed".to_string(),
+        ];
+        let mut parer = Parser::new(original_commands);
+        parer.advance();
+
+        assert_eq!(parer.index, 1);
+        assert_eq!(parer.command_type, Some(CommandType::PUSH));
+
+        parer.advance();
+        assert_eq!(parer.index, 2);
+        assert_eq!(parer.command_type, Some(CommandType::ARITHMETIC));
     }
 
     #[test]
