@@ -31,6 +31,51 @@ impl Parser {
             arg2: None,
         }
     }
+
+    fn remove_comments(command: String) -> String {
+        command.split("//").collect::<Vec<&str>>()[0]
+            .trim()
+            .to_string()
+    }
+
+    fn remove_unnecessary_parts(original_commands: Vec<String>) -> Vec<String> {
+        let mut new_commands = Vec::new();
+        for command in original_commands {
+            let flag = command.trim().chars().nth(0);
+            match flag {
+                Some('/') => (),
+                None => (),
+                Some(_) => new_commands.push(Parser::remove_comments(command)),
+            }
+        }
+
+        new_commands
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use super::*;
+    #[test]
+    fn test_remove_comments() {
+        let command = "   push constant 7  // this is comment".to_string();
+        assert_eq!(Parser::remove_comments(command), "push constant 7");
+    }
+
+    #[test]
+    fn test_remove_unnecessary_parts() {
+        let original_commands = vec![
+            "//this is comment line".to_string(),
+            "push constant 7 // here also comment".to_string(),
+            "   add    //whitespace should be trimmed".to_string(),
+        ];
+
+        let new_commands = vec!["push constant 7".to_string(), "add".to_string()];
+        assert_eq!(
+            Parser::remove_unnecessary_parts(original_commands),
+            new_commands
+        );
+    }
 }
 
 pub fn main() {
