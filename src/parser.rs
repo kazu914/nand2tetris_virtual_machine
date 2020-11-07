@@ -33,6 +33,12 @@ impl Parser {
         }
     }
 
+    fn clear(&mut self) {
+        self.command_type = None;
+        self.arg1 = None;
+        self.arg2 = None;
+    }
+
     fn remove_comments(command: String) -> String {
         command.split("//").collect::<Vec<&str>>()[0]
             .trim()
