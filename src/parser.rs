@@ -44,6 +44,21 @@ impl Parser {
         }
     }
 
+    fn parse(&mut self) {
+        match self.command_type {
+            Some(CommandType::ARITHMETIC) => println!("artithmetic"),
+            Some(CommandType::PUSH) => println!("push"),
+            Some(CommandType::POP) => println!("pop"),
+            Some(CommandType::LABEL) => println!("label"),
+            Some(CommandType::GOTO) => println!("goto"),
+            Some(CommandType::IF) => println!("if"),
+            Some(CommandType::FUNCTION) => println!("function"),
+            Some(CommandType::RETURN) => println!("return"),
+            Some(CommandType::CALL) => println!("call"),
+            None => panic!("CommandType not found"),
+        };
+    }
+
     fn clear(&mut self) {
         self.command_type = None;
         self.arg1 = None;
