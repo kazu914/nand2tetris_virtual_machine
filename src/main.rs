@@ -1,3 +1,5 @@
+use virtual_machine::parser;
+
 fn main() {
-    println!("Hello, world!");
+    parser::main();
 }
