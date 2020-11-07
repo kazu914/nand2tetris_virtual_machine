@@ -39,6 +39,31 @@ impl Parser {
         self.arg2 = None;
     }
 
+    fn classify_command(command: &str) -> CommandType {
+        let firtst_word = command.split(" ").collect::<Vec<&str>>()[0];
+        match firtst_word {
+            "add" => CommandType::ARITHMETIC,
+            "sub" => CommandType::ARITHMETIC,
+            "neg" => CommandType::ARITHMETIC,
+            "eq" => CommandType::ARITHMETIC,
+            "gt" => CommandType::ARITHMETIC,
+            "lt" => CommandType::ARITHMETIC,
+            "and" => CommandType::ARITHMETIC,
+            "or" => CommandType::ARITHMETIC,
+            "not" => CommandType::ARITHMETIC,
+            "push" => CommandType::PUSH,
+            "pop" => CommandType::POP,
+            "label" => CommandType::LABEL,
+            "goto" => CommandType::GOTO,
+            "if-goto" => CommandType::IF,
+            "function" => CommandType::FUNCTION,
+            "return" => CommandType::RETURN,
+            "call" => CommandType::CALL,
+
+            _ => panic!("Invalid command"),
+        }
+    }
+
     fn remove_comments(command: String) -> String {
         command.split("//").collect::<Vec<&str>>()[0]
             .trim()
@@ -99,6 +124,23 @@ mod test {
         assert_eq!(parer.command_type, None);
         assert_eq!(parer.arg1, None);
         assert_eq!(parer.arg2, None);
+    }
+
+    #[test]
+    fn parer_classify_command() {
+        assert_eq!(Parser::classify_command("add"), CommandType::ARITHMETIC);
+        assert_eq!(
+            Parser::classify_command("push constant 7"),
+            CommandType::PUSH
+        );
+        assert_eq!(Parser::classify_command("pop constant 7"), CommandType::POP);
+        assert_eq!(Parser::classify_command("label"), CommandType::LABEL);
+    }
+
+    #[test]
+    #[should_panic(expected = "Invalid command")]
+    fn parer_classify_command_should_panic_with_invalid_command() {
+        Parser::classify_command("invalid command");
     }
 }
 
