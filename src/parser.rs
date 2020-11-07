@@ -39,6 +39,7 @@ impl Parser {
             let command = self.commands[self.index].as_str();
             let command_type = Parser::classify_command(command);
             self.command_type = Some(command_type);
+            self.parse();
             self.index += 1;
             self.has_more_commands = self.commands.len() > self.index;
         }
@@ -46,17 +47,23 @@ impl Parser {
 
     fn parse(&mut self) {
         match self.command_type {
-            Some(CommandType::ARITHMETIC) => println!("artithmetic"),
-            Some(CommandType::PUSH) => println!("push"),
-            Some(CommandType::POP) => println!("pop"),
-            Some(CommandType::LABEL) => println!("label"),
-            Some(CommandType::GOTO) => println!("goto"),
-            Some(CommandType::IF) => println!("if"),
-            Some(CommandType::FUNCTION) => println!("function"),
-            Some(CommandType::RETURN) => println!("return"),
-            Some(CommandType::CALL) => println!("call"),
             None => panic!("CommandType not found"),
+            Some(CommandType::RETURN) => (),
+            Some(CommandType::ARITHMETIC) => self.parse_arithmetic(),
+            Some(_) => self.parse_command_with_args(),
         };
+    }
+
+    fn parse_arithmetic(&mut self) {
+        self.arg1 = Some(self.commands[self.index].to_string())
+    }
+
+    fn parse_command_with_args(&mut self) {
+        let splited_commands = self.commands[self.index].split(" ").collect::<Vec<&str>>();
+        self.arg1 = Some(splited_commands[1].to_string());
+        if splited_commands.len() == 3 {
+            self.arg2 = Some(splited_commands[2].to_string());
+        }
     }
 
     fn clear(&mut self) {
@@ -171,6 +178,33 @@ mod test {
     }
 
     #[test]
+    fn parser_parse() {
+        let original_commands = vec![
+            "//this is comment line".to_string(),
+            "push constant 7 // here also comment".to_string(),
+            "   add    //whitespace should be trimmed".to_string(),
+            "label LOOP".to_string(),
+            "return".to_string(),
+        ];
+        let mut parser = Parser::new(original_commands);
+        parser.advance();
+        assert_eq!(parser.arg1, Some("constant".to_string()));
+        assert_eq!(parser.arg2, Some("7".to_string()));
+
+        parser.advance();
+        assert_eq!(parser.arg1, Some("add".to_string()));
+        assert_eq!(parser.arg2, None);
+
+        parser.advance();
+        assert_eq!(parser.arg1, Some("LOOP".to_string()));
+        assert_eq!(parser.arg2, None);
+
+        parser.advance();
+        assert_eq!(parser.arg1, None);
+        assert_eq!(parser.arg2, None);
+    }
+
+    #[test]
     fn parser_classify_command() {
         assert_eq!(Parser::classify_command("add"), CommandType::ARITHMETIC);
         assert_eq!(
@@ -186,10 +220,4 @@ mod test {
     fn parser_classify_command_should_panic_with_invalid_command() {
         Parser::classify_command("invalid command");
     }
-}
-
-pub fn main() {
-    let commands = vec!["push constant 15".to_string()];
-    let parer = Parser::new(commands);
-    println!("main")
 }
