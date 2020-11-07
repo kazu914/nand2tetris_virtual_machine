@@ -1,5 +1,3 @@
-use std::collections::VecDeque;
-
 #[derive(Debug, PartialEq)]
 pub enum Segment {
     ARGUMENT,
@@ -60,14 +58,12 @@ impl ArithmeticCommand {
 
 pub struct CodeWriter {
     file_name: String,
-    stack_point: usize,
     generated_code: Vec<String>,
 }
 
 impl CodeWriter {
     pub fn new(file_name: String) -> CodeWriter {
         CodeWriter {
-            stack_point: 256,
             file_name,
             generated_code: vec![],
         }
@@ -76,8 +72,7 @@ impl CodeWriter {
     pub fn push(&mut self, segment: &str, index: &str) {
         match Segment::from_str(segment) {
             Some(Segment::CONSTANT) => {
-                let mut commands = CodeWriter::push_constant(self.stack_point, index);
-                self.stack_point += 1;
+                let mut commands = CodeWriter::push_constant(index);
                 self.generated_code.append(&mut commands)
             }
             _ => (),
@@ -87,29 +82,35 @@ impl CodeWriter {
     pub fn run_arichmetic_command(&mut self, arithmetic_command: &str) {
         match ArithmeticCommand::from_str(arithmetic_command) {
             Some(ArithmeticCommand::ADD) => {
-                let mut commands = CodeWriter::add(self.stack_point);
-                self.stack_point -= 1;
+                let mut commands = CodeWriter::add();
                 self.generated_code.append(&mut commands)
             }
             _ => (),
         }
     }
 
-    fn push_constant(stack_point: usize, constant: &str) -> Vec<String> {
+    fn push_constant(constant: &str) -> Vec<String> {
         vec![
             format!("@{}", constant),
             "D=A".to_string(),
-            format!("@{}", stack_point),
+            "@SP".to_string(),
+            "A=M".to_string(),
             "M=D".to_string(),
+            "@SP".to_string(),
+            "M=M+1".to_string(),
         ]
     }
 
-    fn add(stack_point: usize) -> Vec<String> {
+    fn add() -> Vec<String> {
         vec![
-            format!("@{}", stack_point - 1),
-            "D=M".to_string(),
-            format!("@{}", stack_point - 2),
+            "@SP".to_string(),
+            "M=M-1".to_string(),
+            "AD=M".to_string(),
+            "@SP".to_string(),
+            "AM=M-1".to_string(),
             "M=M+D".to_string(),
+            "@SP".to_string(),
+            "M=M+1".to_string(),
         ]
     }
 }
@@ -122,22 +123,13 @@ mod test {
         let expected_result = vec![
             "@7".to_string(),
             "D=A".to_string(),
-            "@256".to_string(),
+            "@SP".to_string(),
+            "A=M".to_string(),
             "M=D".to_string(),
+            "@SP".to_string(),
+            "M=M+1".to_string(),
         ];
-        let result = CodeWriter::push_constant(256, "7");
-        assert_eq!(result, expected_result)
-    }
-
-    #[test]
-    fn add() {
-        let expected_result = vec![
-            "@257".to_string(),
-            "D=M".to_string(),
-            "@256".to_string(),
-            "M=M+D".to_string(),
-        ];
-        let result = CodeWriter::add(258);
+        let result = CodeWriter::push_constant("7");
         assert_eq!(result, expected_result)
     }
 }
