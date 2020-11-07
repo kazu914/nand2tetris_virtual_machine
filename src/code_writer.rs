@@ -1,3 +1,5 @@
+use std::{fs::OpenOptions, io::prelude::*};
+
 #[derive(Debug, PartialEq)]
 pub enum Segment {
     ARGUMENT,
@@ -69,6 +71,18 @@ impl CodeWriter {
         }
     }
 
+    pub fn output(&self) {
+        println!("{:#?}", self.generated_code);
+        let mut output = OpenOptions::new()
+            .create(true)
+            .write(true)
+            .open("/home/nomura/nand2tetris/projects/07/StackArithmetic/SimpleAdd/SimpleAdd.asm")
+            .unwrap();
+        for line in &self.generated_code {
+            writeln!(output, "{}", line).unwrap();
+        }
+    }
+
     pub fn push(&mut self, segment: &str, index: &str) {
         match Segment::from_str(segment) {
             Some(Segment::CONSTANT) => {
@@ -105,9 +119,11 @@ impl CodeWriter {
         vec![
             "@SP".to_string(),
             "M=M-1".to_string(),
-            "AD=M".to_string(),
+            "A=M".to_string(),
+            "D=M".to_string(),
             "@SP".to_string(),
-            "AM=M-1".to_string(),
+            "M=M-1".to_string(),
+            "A=M".to_string(),
             "M=M+D".to_string(),
             "@SP".to_string(),
             "M=M+1".to_string(),
