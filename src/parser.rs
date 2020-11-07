@@ -100,13 +100,13 @@ impl Parser {
 mod test {
     use super::*;
     #[test]
-    fn parer_remove_comments() {
+    fn parser_remove_comments() {
         let command = "   push constant 7  // this is comment".to_string();
         assert_eq!(Parser::remove_comments(command), "push constant 7");
     }
 
     #[test]
-    fn parer_remove_unnecessary_parts() {
+    fn parser_remove_unnecessary_parts() {
         let original_commands = vec![
             "//this is comment line".to_string(),
             "push constant 7 // here also comment".to_string(),
@@ -128,35 +128,35 @@ mod test {
         ];
 
         let new_commands = vec!["push constant 7".to_string(), "add".to_string()];
-        let parer = Parser::new(original_commands);
-        assert_eq!(parer.commands, new_commands);
-        assert_eq!(parer.has_more_commands, true);
-        assert_eq!(parer.index, 0);
-        assert_eq!(parer.command_type, None);
-        assert_eq!(parer.arg1, None);
-        assert_eq!(parer.arg2, None);
+        let parser = Parser::new(original_commands);
+        assert_eq!(parser.commands, new_commands);
+        assert_eq!(parser.has_more_commands, true);
+        assert_eq!(parser.index, 0);
+        assert_eq!(parser.command_type, None);
+        assert_eq!(parser.arg1, None);
+        assert_eq!(parser.arg2, None);
     }
 
     #[test]
-    fn parer_advance() {
+    fn parser_advance() {
         let original_commands = vec![
             "//this is comment line".to_string(),
             "push constant 7 // here also comment".to_string(),
             "   add    //whitespace should be trimmed".to_string(),
         ];
-        let mut parer = Parser::new(original_commands);
-        parer.advance();
+        let mut parser = Parser::new(original_commands);
+        parser.advance();
 
-        assert_eq!(parer.index, 1);
-        assert_eq!(parer.command_type, Some(CommandType::PUSH));
+        assert_eq!(parser.index, 1);
+        assert_eq!(parser.command_type, Some(CommandType::PUSH));
 
-        parer.advance();
-        assert_eq!(parer.index, 2);
-        assert_eq!(parer.command_type, Some(CommandType::ARITHMETIC));
+        parser.advance();
+        assert_eq!(parser.index, 2);
+        assert_eq!(parser.command_type, Some(CommandType::ARITHMETIC));
     }
 
     #[test]
-    fn parer_classify_command() {
+    fn parser_classify_command() {
         assert_eq!(Parser::classify_command("add"), CommandType::ARITHMETIC);
         assert_eq!(
             Parser::classify_command("push constant 7"),
@@ -168,7 +168,7 @@ mod test {
 
     #[test]
     #[should_panic(expected = "Invalid command")]
-    fn parer_classify_command_should_panic_with_invalid_command() {
+    fn parser_classify_command_should_panic_with_invalid_command() {
         Parser::classify_command("invalid command");
     }
 }
