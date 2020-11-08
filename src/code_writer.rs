@@ -61,6 +61,7 @@ impl ArithmeticCommand {
 pub struct CodeWriter {
     file_name: String,
     generated_code: Vec<String>,
+    symbol_count: usize,
 }
 
 impl CodeWriter {
@@ -68,6 +69,7 @@ impl CodeWriter {
         CodeWriter {
             file_name,
             generated_code: vec![],
+            symbol_count: 0,
         }
     }
 
@@ -98,6 +100,10 @@ impl CodeWriter {
         let mut new_code = match ArithmeticCommand::from_str(arithmetic_command) {
             Some(ADD) => CodeWriter::add(),
             Some(SUB) => CodeWriter::sub(),
+            Some(EQ) => {
+                self.symbol_count += 1;
+                CodeWriter::eq(&self.symbol_count)
+            }
             _ => return,
         };
         self.generated_code.append(&mut new_code);
@@ -140,6 +146,33 @@ impl CodeWriter {
             "M=M-1".to_string(),
             "A=M".to_string(),
             "M=M-D".to_string(),
+            "@SP".to_string(),
+            "M=M+1".to_string(),
+        ]
+    }
+
+    fn eq(symbol_count: &usize) -> Vec<String> {
+        vec![
+            "@SP".to_string(),
+            "M=M-1".to_string(),
+            "A=M".to_string(),
+            "D=M".to_string(),
+            "@SP".to_string(),
+            "M=M-1".to_string(),
+            "A=M".to_string(),
+            "MD=M-D".to_string(), // M=x, D=y
+            format!("@IF_ZERO.{}", symbol_count),
+            "D;JEQ".to_string(),
+            "@SP".to_string(),
+            "A=M".to_string(),
+            "M=0".to_string(),
+            format!("@IF_ZERO.{}.FINAL", symbol_count),
+            "0;JMP".to_string(),
+            format!("(IF_ZERO.{})", symbol_count),
+            "@SP".to_string(),
+            "A=M".to_string(),
+            "M=-1".to_string(),
+            format!("(IF_ZERO.{}.FINAL)", symbol_count),
             "@SP".to_string(),
             "M=M+1".to_string(),
         ]
