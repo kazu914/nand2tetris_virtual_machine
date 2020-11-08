@@ -94,13 +94,13 @@ impl CodeWriter {
     }
 
     pub fn run_arichmetic_command(&mut self, arithmetic_command: &str) {
-        match ArithmeticCommand::from_str(arithmetic_command) {
-            Some(ArithmeticCommand::ADD) => {
-                let mut commands = CodeWriter::add();
-                self.generated_code.append(&mut commands)
-            }
-            _ => (),
-        }
+        use self::ArithmeticCommand::*;
+        let mut new_code = match ArithmeticCommand::from_str(arithmetic_command) {
+            Some(ADD) => CodeWriter::add(),
+            Some(SUB) => CodeWriter::sub(),
+            _ => return,
+        };
+        self.generated_code.append(&mut new_code);
     }
 
     fn push_constant(constant: &str) -> Vec<String> {
@@ -125,6 +125,21 @@ impl CodeWriter {
             "M=M-1".to_string(),
             "A=M".to_string(),
             "M=M+D".to_string(),
+            "@SP".to_string(),
+            "M=M+1".to_string(),
+        ]
+    }
+
+    fn sub() -> Vec<String> {
+        vec![
+            "@SP".to_string(),
+            "M=M-1".to_string(),
+            "A=M".to_string(),
+            "D=M".to_string(),
+            "@SP".to_string(),
+            "M=M-1".to_string(),
+            "A=M".to_string(),
+            "M=M-D".to_string(),
             "@SP".to_string(),
             "M=M+1".to_string(),
         ]
