@@ -104,6 +104,14 @@ impl CodeWriter {
                 self.symbol_count += 1;
                 CodeWriter::eq(&self.symbol_count)
             }
+            Some(GT) => {
+                self.symbol_count += 1;
+                CodeWriter::gt(&self.symbol_count)
+            }
+            Some(LT) => {
+                self.symbol_count += 1;
+                CodeWriter::lt(&self.symbol_count)
+            }
             _ => return,
         };
         self.generated_code.append(&mut new_code);
@@ -152,6 +160,18 @@ impl CodeWriter {
     }
 
     fn eq(symbol_count: &usize) -> Vec<String> {
+        CodeWriter::make_condition_code(symbol_count, "JEQ")
+    }
+
+    fn gt(symbol_count: &usize) -> Vec<String> {
+        CodeWriter::make_condition_code(symbol_count, "JGT")
+    }
+
+    fn lt(symbol_count: &usize) -> Vec<String> {
+        CodeWriter::make_condition_code(symbol_count, "JLT")
+    }
+
+    fn make_condition_code(symbol_count: &usize, condition: &str) -> Vec<String> {
         vec![
             "@SP".to_string(),
             "M=M-1".to_string(),
@@ -161,18 +181,18 @@ impl CodeWriter {
             "M=M-1".to_string(),
             "A=M".to_string(),
             "MD=M-D".to_string(), // M=x, D=y
-            format!("@IF_ZERO.{}", symbol_count),
-            "D;JEQ".to_string(),
+            format!("@IF_CONDITION.{}", symbol_count),
+            format!("D;{}", condition),
             "@SP".to_string(),
             "A=M".to_string(),
             "M=0".to_string(),
-            format!("@IF_ZERO.{}.FINAL", symbol_count),
+            format!("@IF_CONDITION.{}.FINAL", symbol_count),
             "0;JMP".to_string(),
-            format!("(IF_ZERO.{})", symbol_count),
+            format!("(IF_CONDITION.{})", symbol_count),
             "@SP".to_string(),
             "A=M".to_string(),
             "M=-1".to_string(),
-            format!("(IF_ZERO.{}.FINAL)", symbol_count),
+            format!("(IF_CONDITION.{}.FINAL)", symbol_count),
             "@SP".to_string(),
             "M=M+1".to_string(),
         ]
