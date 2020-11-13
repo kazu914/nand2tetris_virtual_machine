@@ -100,6 +100,8 @@ impl CodeWriter {
         let mut new_code = match ArithmeticCommand::from_str(arithmetic_command) {
             Some(ADD) => CodeWriter::add(),
             Some(SUB) => CodeWriter::sub(),
+            Some(AND) => CodeWriter::and(),
+            Some(OR) => CodeWriter::or(),
             Some(EQ) => {
                 self.symbol_count += 1;
                 CodeWriter::eq(&self.symbol_count)
@@ -135,6 +137,14 @@ impl CodeWriter {
 
     fn sub() -> Vec<String> {
         CodeWriter::make_two_operands_code("-")
+    }
+
+    fn and() -> Vec<String> {
+        CodeWriter::make_two_operands_code("&")
+    }
+
+    fn or() -> Vec<String> {
+        CodeWriter::make_two_operands_code("|")
     }
 
     fn make_two_operands_code(operator: &str) -> Vec<String> {
