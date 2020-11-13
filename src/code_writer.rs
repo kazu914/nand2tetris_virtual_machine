@@ -130,21 +130,14 @@ impl CodeWriter {
     }
 
     fn add() -> Vec<String> {
-        vec![
-            "@SP".to_string(),
-            "M=M-1".to_string(),
-            "A=M".to_string(),
-            "D=M".to_string(),
-            "@SP".to_string(),
-            "M=M-1".to_string(),
-            "A=M".to_string(),
-            "M=M+D".to_string(),
-            "@SP".to_string(),
-            "M=M+1".to_string(),
-        ]
+        CodeWriter::make_two_operands_code("+")
     }
 
     fn sub() -> Vec<String> {
+        CodeWriter::make_two_operands_code("-")
+    }
+
+    fn make_two_operands_code(operator: &str) -> Vec<String> {
         vec![
             "@SP".to_string(),
             "M=M-1".to_string(),
@@ -153,7 +146,7 @@ impl CodeWriter {
             "@SP".to_string(),
             "M=M-1".to_string(),
             "A=M".to_string(),
-            "M=M-D".to_string(),
+            format!("M=M{}D", operator),
             "@SP".to_string(),
             "M=M+1".to_string(),
         ]
