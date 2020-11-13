@@ -100,8 +100,7 @@ impl CodeWriter {
         let mut new_code = match ArithmeticCommand::from_str(arithmetic_command) {
             Some(ADD) => CodeWriter::add(),
             Some(SUB) => CodeWriter::sub(),
-            Some(AND) => CodeWriter::and(),
-            Some(OR) => CodeWriter::or(),
+            Some(NEG) => CodeWriter::neg(),
             Some(EQ) => {
                 self.symbol_count += 1;
                 CodeWriter::eq(&self.symbol_count)
@@ -114,6 +113,9 @@ impl CodeWriter {
                 self.symbol_count += 1;
                 CodeWriter::lt(&self.symbol_count)
             }
+            Some(AND) => CodeWriter::and(),
+            Some(OR) => CodeWriter::or(),
+            Some(NOT) => CodeWriter::not(),
             _ => return,
         };
         self.generated_code.append(&mut new_code);
@@ -126,6 +128,24 @@ impl CodeWriter {
             "@SP".to_string(),
             "A=M".to_string(),
             "M=D".to_string(),
+            "@SP".to_string(),
+            "M=M+1".to_string(),
+        ]
+    }
+
+    fn neg() -> Vec<String> {
+        CodeWriter::make_one_operand_code("-")
+    }
+    fn not() -> Vec<String> {
+        CodeWriter::make_one_operand_code("!")
+    }
+
+    fn make_one_operand_code(operator: &str) -> Vec<String> {
+        vec![
+            "@SP".to_string(),
+            "M=M-1".to_string(),
+            "A=M".to_string(),
+            format!("M={}M", operator),
             "@SP".to_string(),
             "M=M+1".to_string(),
         ]
