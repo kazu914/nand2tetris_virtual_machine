@@ -78,7 +78,7 @@ impl CodeWriter {
         let mut output = OpenOptions::new()
             .create(true)
             .write(true)
-            .open("/home/nomura/nand2tetris/projects/07/StackArithmetic/SimpleAdd/SimpleAdd.asm")
+            .open("/home/nomura/nand2tetris/projects/07/StackArithmetic/StackTest/StackTest.asm")
             .unwrap();
         for line in &self.generated_code {
             writeln!(output, "{}", line).unwrap();

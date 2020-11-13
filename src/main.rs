@@ -1,12 +1,21 @@
 use virtual_machine::code_writer;
 use virtual_machine::parser;
 
+use std::{
+    fs::File,
+    io::{prelude::*, BufReader},
+};
+
+fn read_lines_from_file(filename: &str) -> Vec<String> {
+    let file = File::open(filename).expect("Failed to open");
+    let buf = BufReader::new(file);
+    buf.lines()
+        .map(|l| l.expect("Failed to read line"))
+        .collect()
+}
+
 fn main() {
-    let commands = vec![
-        "push constant 7".to_string(),
-        "push constant 8".to_string(),
-        "add".to_string(),
-    ];
+    let commands = read_lines_from_file("../../projects/07/StackArithmetic/StackTest/StackTest.vm");
     let mut parser = parser::Parser::new(commands);
     let mut code_writer = code_writer::CodeWriter::new("tmp.asm".to_string());
     while parser.has_more_commands {
