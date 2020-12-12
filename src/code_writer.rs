@@ -121,24 +121,25 @@ impl CodeWriter {
     }
 
     fn push_constant(constant: &str) -> Vec<String> {
-        vec![
-            format!("@{}", constant),
-            "D=A".to_string(),
-            "@SP".to_string(),
-            "A=M".to_string(),
-            "M=D".to_string(),
-            "@SP".to_string(),
-            "M=M+1".to_string(),
-        ]
+        let mut res = vec![format!("@{}", constant), "D=A".to_string()];
+        res.append(&mut CodeWriter::generate_push_d_to_sp_code());
+        res
     }
 
     fn push_local(index: &str) -> Vec<String> {
-        vec![
+        let mut res = vec![
             "@LCL".to_string(),
             "D=A".to_string(),
             format!("@{}", index),
             "A=D+A".to_string(),
             "D=M".to_string(),
+        ];
+        res.append(&mut CodeWriter::generate_push_d_to_sp_code());
+        res
+    }
+
+    fn generate_push_d_to_sp_code() -> Vec<String> {
+        vec![
             "@SP".to_string(),
             "A=M".to_string(),
             "M=D".to_string(),
@@ -251,6 +252,24 @@ mod test {
             "M=M+1".to_string(),
         ];
         let result = CodeWriter::push_constant("7");
+        assert_eq!(result, expected_result)
+    }
+
+    #[test]
+    fn push_local() {
+        let expected_result = vec![
+            "@LCL".to_string(),
+            "D=A".to_string(),
+            "@1".to_string(),
+            "A=D+A".to_string(),
+            "D=M".to_string(),
+            "@SP".to_string(),
+            "A=M".to_string(),
+            "M=D".to_string(),
+            "@SP".to_string(),
+            "M=M+1".to_string(),
+        ];
+        let result = CodeWriter::push_local("1");
         assert_eq!(result, expected_result)
     }
 }
