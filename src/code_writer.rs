@@ -108,6 +108,18 @@ impl CodeWriter {
         };
         self.generated_code.append(&mut new_code);
     }
+    pub fn pop(&mut self, segment: &str, index: &str) {
+        let mut new_code = match Segment::from_str(segment) {
+            Some(Segment::LOCAL)
+            | Some(Segment::ARGUMENT)
+            | Some(Segment::THIS)
+            | Some(Segment::THAT) => {
+                CodeWriter::pop_segment(index, Segment::to_register_alias_str(segment).as_str())
+            }
+            _ => return,
+        };
+        self.generated_code.append(&mut new_code);
+    }
 
     pub fn run_arichmetic_command(&mut self, arithmetic_command: &str) {
         use self::ArithmeticCommand::*;
@@ -160,6 +172,30 @@ impl CodeWriter {
             "M=D".to_string(),
             "@SP".to_string(),
             "M=M+1".to_string(),
+        ]
+    }
+
+    fn pop_segment(index: &str, segment: &str) -> Vec<String> {
+        let mut res = vec![
+            format!("@{}", segment),
+            "D=M".to_string(),
+            format!("@{}", index),
+            "A=D+A".to_string(),
+            "@R13".to_string(),
+            "M=D".to_string(),
+        ];
+        res.append(&mut CodeWriter::generate_pop_sp_to_r13_code());
+        res
+    }
+
+    fn generate_pop_sp_to_r13_code() -> Vec<String> {
+        vec![
+            "@SP".to_string(),
+            "AM=M-1".to_string(),
+            "D=M".to_string(),
+            "@R13".to_string(),
+            "A=M".to_string(),
+            "M=D".to_string(),
         ]
     }
 
@@ -286,6 +322,27 @@ mod test {
         ];
         let mut code_writer = CodeWriter::new("a".to_string());
         code_writer.push("local", "1");
+        assert_eq!(code_writer.generated_code, expected_result)
+    }
+
+    #[test]
+    fn pop_local() {
+        let expected_result = vec![
+            "@LCL".to_string(),
+            "D=M".to_string(),
+            "@1".to_string(),
+            "A=D+A".to_string(),
+            "@R13".to_string(),
+            "M=D".to_string(),
+            "@SP".to_string(),
+            "AM=M-1".to_string(),
+            "D=M".to_string(),
+            "@R13".to_string(),
+            "A=M".to_string(),
+            "M=D".to_string(),
+        ];
+        let mut code_writer = CodeWriter::new("a".to_string());
+        code_writer.pop("local", "1");
         assert_eq!(code_writer.generated_code, expected_result)
     }
 }
