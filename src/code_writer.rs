@@ -26,6 +26,16 @@ impl Segment {
             _ => panic!("Invalid Segment"),
         }
     }
+
+    pub fn to_register_alias_str(segment: &str) -> String {
+        match Segment::from_str(segment) {
+            Some(Segment::LOCAL) => "LCL".to_string(),
+            Some(Segment::ARGUMENT) => "ARG".to_string(),
+            Some(Segment::THIS) => "THIS".to_string(),
+            Some(Segment::THAT) => "THAT".to_string(),
+            _ => panic!("{:?} has not alias name in register", segment),
+        }
+    }
 }
 
 #[derive(Debug, PartialEq)]
@@ -88,7 +98,12 @@ impl CodeWriter {
     pub fn push(&mut self, segment: &str, index: &str) {
         let mut new_code = match Segment::from_str(segment) {
             Some(Segment::CONSTANT) => CodeWriter::push_constant(index),
-            Some(Segment::LOCAL) => CodeWriter::push_local(index),
+            Some(Segment::LOCAL)
+            | Some(Segment::ARGUMENT)
+            | Some(Segment::THIS)
+            | Some(Segment::THAT) => {
+                CodeWriter::push_segment(index, Segment::to_register_alias_str(segment).as_str())
+            }
             _ => return,
         };
         self.generated_code.append(&mut new_code);
@@ -126,9 +141,9 @@ impl CodeWriter {
         res
     }
 
-    fn push_local(index: &str) -> Vec<String> {
+    fn push_segment(index: &str, segment: &str) -> Vec<String> {
         let mut res = vec![
-            "@LCL".to_string(),
+            format!("@{}", segment),
             "D=A".to_string(),
             format!("@{}", index),
             "A=D+A".to_string(),
@@ -269,7 +284,8 @@ mod test {
             "@SP".to_string(),
             "M=M+1".to_string(),
         ];
-        let result = CodeWriter::push_local("1");
-        assert_eq!(result, expected_result)
+        let mut code_writer = CodeWriter::new("a".to_string());
+        code_writer.push("local", "1");
+        assert_eq!(code_writer.generated_code, expected_result)
     }
 }
