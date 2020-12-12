@@ -86,13 +86,12 @@ impl CodeWriter {
     }
 
     pub fn push(&mut self, segment: &str, index: &str) {
-        match Segment::from_str(segment) {
-            Some(Segment::CONSTANT) => {
-                let mut commands = CodeWriter::push_constant(index);
-                self.generated_code.append(&mut commands)
-            }
-            _ => (),
-        }
+        let mut new_code = match Segment::from_str(segment) {
+            Some(Segment::CONSTANT) => CodeWriter::push_constant(index),
+            Some(Segment::LOCAL) => CodeWriter::push_local(index),
+            _ => return,
+        };
+        self.generated_code.append(&mut new_code);
     }
 
     pub fn run_arichmetic_command(&mut self, arithmetic_command: &str) {
@@ -125,6 +124,21 @@ impl CodeWriter {
         vec![
             format!("@{}", constant),
             "D=A".to_string(),
+            "@SP".to_string(),
+            "A=M".to_string(),
+            "M=D".to_string(),
+            "@SP".to_string(),
+            "M=M+1".to_string(),
+        ]
+    }
+
+    fn push_local(index: &str) -> Vec<String> {
+        vec![
+            "@LCL".to_string(),
+            "D=A".to_string(),
+            format!("@{}", index),
+            "A=D+A".to_string(),
+            "D=M".to_string(),
             "@SP".to_string(),
             "A=M".to_string(),
             "M=D".to_string(),
