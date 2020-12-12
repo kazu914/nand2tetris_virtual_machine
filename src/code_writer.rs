@@ -156,7 +156,7 @@ impl CodeWriter {
     fn push_segment(index: &str, segment: &str) -> Vec<String> {
         let mut res = vec![
             format!("@{}", segment),
-            "D=A".to_string(),
+            "D=M".to_string(),
             format!("@{}", index),
             "A=D+A".to_string(),
             "D=M".to_string(),
@@ -310,7 +310,7 @@ mod test {
     fn push_local() {
         let expected_result = vec![
             "@LCL".to_string(),
-            "D=A".to_string(),
+            "D=M".to_string(),
             "@1".to_string(),
             "A=D+A".to_string(),
             "D=M".to_string(),
