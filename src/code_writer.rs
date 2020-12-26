@@ -342,7 +342,7 @@ impl CodeWriter {
     }
 
     fn camel_case_filename_without_extention(filename: &str) -> String {
-        let without_extention = filename.replace(".vm", "");
+        let without_extention = filename.replace(".vm", "").to_lowercase();
         let mut file_name_char = without_extention.chars();
         match file_name_char.next() {
             None => String::new(),
