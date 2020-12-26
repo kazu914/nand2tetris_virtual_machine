@@ -111,6 +111,7 @@ impl CodeWriter {
                 CodeWriter::push_pointer_and_temp(index, POINTER_BASE_ADDRESS)
             }
             Some(Segment::TEMP) => CodeWriter::push_pointer_and_temp(index, TEMP_BASE_ADDRESS),
+            Some(Segment::STATIC) => self.push_static(index),
             _ => return,
         };
         self.generated_code.append(&mut new_code);
@@ -183,6 +184,13 @@ impl CodeWriter {
             "A=D+A".to_string(),
             "D=M".to_string(),
         ];
+        res.append(&mut CodeWriter::generate_push_d_to_sp_code());
+        res
+    }
+
+    fn push_static(&self, index: &str) -> Vec<String> {
+        let constant_name = CodeWriter::camel_case_filename_without_extention(&self.file_name);
+        let mut res = vec![format!("@{}.{}", constant_name, index), "D=M".to_string()];
         res.append(&mut CodeWriter::generate_push_d_to_sp_code());
         res
     }
@@ -321,6 +329,15 @@ impl CodeWriter {
             "M=M+1".to_string(),
         ]
     }
+
+    fn camel_case_filename_without_extention(filename: &str) -> String {
+        let without_extention = filename.replace(".vm", "");
+        let mut file_name_char = without_extention.chars();
+        match file_name_char.next() {
+            None => String::new(),
+            Some(c) => c.to_uppercase().collect::<String>() + file_name_char.as_str(),
+        }
+    }
 }
 
 #[cfg(test)]
@@ -379,5 +396,12 @@ mod test {
         let mut code_writer = CodeWriter::new("a".to_string());
         code_writer.pop("local", "1");
         assert_eq!(code_writer.generated_code, expected_result)
+    }
+
+    #[test]
+    fn camel_case_filename_without_extention() {
+        let expected_result = "Filename";
+        let result = CodeWriter::camel_case_filename_without_extention("filename.vm");
+        assert_eq!(result, expected_result)
     }
 }
