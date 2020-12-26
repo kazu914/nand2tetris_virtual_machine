@@ -86,12 +86,12 @@ impl CodeWriter {
         }
     }
 
-    pub fn output(&self) {
+    pub fn output(&self, file_name: &str) {
         println!("{:#?}", self.generated_code);
         let mut output = OpenOptions::new()
             .create(true)
             .write(true)
-            .open("/home/nomura/nand2tetris/projects/07/StackArithmetic/StackTest/StackTest.asm")
+            .open(file_name)
             .unwrap();
         for line in &self.generated_code {
             writeln!(output, "{}", line).unwrap();
