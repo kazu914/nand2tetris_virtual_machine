@@ -1,5 +1,7 @@
 use std::{fs::OpenOptions, io::prelude::*};
 
+const POINTER_BASE_ADDRESS: &str = "3";
+
 #[derive(Debug, PartialEq)]
 pub enum Segment {
     ARGUMENT,
@@ -104,6 +106,8 @@ impl CodeWriter {
             | Some(Segment::THAT) => {
                 CodeWriter::push_segment(index, Segment::to_register_alias_str(segment).as_str())
             }
+            Some(Segment::POINTER) => CodeWriter::push_pointer(index),
+            //TODO tmpに対応
             _ => return,
         };
         self.generated_code.append(&mut new_code);
@@ -116,6 +120,8 @@ impl CodeWriter {
             | Some(Segment::THAT) => {
                 CodeWriter::pop_segment(index, Segment::to_register_alias_str(segment).as_str())
             }
+            Some(Segment::POINTER) => CodeWriter::pop_pointer(index),
+            //TODO tmpに対応
             _ => return,
         };
         self.generated_code.append(&mut new_code);
@@ -165,6 +171,18 @@ impl CodeWriter {
         res
     }
 
+    fn push_pointer(index: &str) -> Vec<String> {
+        let mut res = vec![
+            format!("@{}", POINTER_BASE_ADDRESS),
+            "D=A".to_string(),
+            format!("@{}", index),
+            "A=D+A".to_string(),
+            "D=M".to_string(),
+        ];
+        res.append(&mut CodeWriter::generate_push_d_to_sp_code());
+        res
+    }
+
     fn generate_push_d_to_sp_code() -> Vec<String> {
         vec![
             "@SP".to_string(),
@@ -181,6 +199,19 @@ impl CodeWriter {
             "D=M".to_string(),
             format!("@{}", index),
             "A=D+A".to_string(),
+            "@R13".to_string(),
+            "M=D".to_string(),
+        ];
+        res.append(&mut CodeWriter::generate_pop_sp_to_r13_code());
+        res
+    }
+
+    fn pop_pointer(index: &str) -> Vec<String> {
+        let mut res = vec![
+            format!("@{}", POINTER_BASE_ADDRESS),
+            "D=A".to_string(),
+            format!("@{}", index),
+            "D=D+A".to_string(),
             "@R13".to_string(),
             "M=D".to_string(),
         ];
