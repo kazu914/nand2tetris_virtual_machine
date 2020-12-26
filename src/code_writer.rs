@@ -202,7 +202,7 @@ impl CodeWriter {
             format!("@{}", segment),
             "D=M".to_string(),
             format!("@{}", index),
-            "A=D+A".to_string(),
+            "D=D+A".to_string(),
             "@R13".to_string(),
             "M=D".to_string(),
         ];
