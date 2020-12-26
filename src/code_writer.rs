@@ -126,7 +126,7 @@ impl CodeWriter {
             }
             Some(Segment::POINTER) => CodeWriter::pop_pointer_and_temp(index, POINTER_BASE_ADDRESS),
             Some(Segment::TEMP) => CodeWriter::pop_pointer_and_temp(index, TEMP_BASE_ADDRESS),
-            //TODO tmpに対応
+            Some(Segment::STATIC) => self.pop_static(index),
             _ => return,
         };
         self.generated_code.append(&mut new_code);
@@ -225,6 +225,17 @@ impl CodeWriter {
             format!("@{}", index),
             "D=D+A".to_string(),
             "@R13".to_string(),
+            "M=D".to_string(),
+        ];
+        res.append(&mut CodeWriter::generate_pop_sp_to_r13_code());
+        res
+    }
+    fn pop_static(&self, index: &str) -> Vec<String> {
+        let constant_name = CodeWriter::camel_case_filename_without_extention(&self.file_name);
+        let mut res = vec![
+            format!("@{}.{}", constant_name, index),
+            "D=A".to_string(),
+            "R13".to_string(),
             "M=D".to_string(),
         ];
         res.append(&mut CodeWriter::generate_pop_sp_to_r13_code());
