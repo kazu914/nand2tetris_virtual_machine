@@ -1,6 +1,7 @@
 use std::{fs::OpenOptions, io::prelude::*};
 
 const POINTER_BASE_ADDRESS: &str = "3";
+const TEMP_BASE_ADDRESS: &str = "5";
 
 #[derive(Debug, PartialEq)]
 pub enum Segment {
@@ -106,8 +107,10 @@ impl CodeWriter {
             | Some(Segment::THAT) => {
                 CodeWriter::push_segment(index, Segment::to_register_alias_str(segment).as_str())
             }
-            Some(Segment::POINTER) => CodeWriter::push_pointer(index),
-            //TODO tmpに対応
+            Some(Segment::POINTER) => {
+                CodeWriter::push_pointer_and_temp(index, POINTER_BASE_ADDRESS)
+            }
+            Some(Segment::TEMP) => CodeWriter::push_pointer_and_temp(index, TEMP_BASE_ADDRESS),
             _ => return,
         };
         self.generated_code.append(&mut new_code);
@@ -120,7 +123,8 @@ impl CodeWriter {
             | Some(Segment::THAT) => {
                 CodeWriter::pop_segment(index, Segment::to_register_alias_str(segment).as_str())
             }
-            Some(Segment::POINTER) => CodeWriter::pop_pointer(index),
+            Some(Segment::POINTER) => CodeWriter::pop_pointer_and_temp(index, POINTER_BASE_ADDRESS),
+            Some(Segment::TEMP) => CodeWriter::pop_pointer_and_temp(index, TEMP_BASE_ADDRESS),
             //TODO tmpに対応
             _ => return,
         };
@@ -171,9 +175,9 @@ impl CodeWriter {
         res
     }
 
-    fn push_pointer(index: &str) -> Vec<String> {
+    fn push_pointer_and_temp(index: &str, base_address: &str) -> Vec<String> {
         let mut res = vec![
-            format!("@{}", POINTER_BASE_ADDRESS),
+            format!("@{}", base_address),
             "D=A".to_string(),
             format!("@{}", index),
             "A=D+A".to_string(),
@@ -206,9 +210,9 @@ impl CodeWriter {
         res
     }
 
-    fn pop_pointer(index: &str) -> Vec<String> {
+    fn pop_pointer_and_temp(index: &str, base_address: &str) -> Vec<String> {
         let mut res = vec![
-            format!("@{}", POINTER_BASE_ADDRESS),
+            format!("@{}", base_address),
             "D=A".to_string(),
             format!("@{}", index),
             "D=D+A".to_string(),
