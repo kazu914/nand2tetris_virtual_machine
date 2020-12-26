@@ -383,7 +383,7 @@ mod test {
             "@LCL".to_string(),
             "D=M".to_string(),
             "@1".to_string(),
-            "A=D+A".to_string(),
+            "D=D+A".to_string(),
             "@R13".to_string(),
             "M=D".to_string(),
             "@SP".to_string(),
