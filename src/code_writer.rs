@@ -1,45 +1,8 @@
 use std::{fs::OpenOptions, io::prelude::*};
+mod segment;
 
 const POINTER_BASE_ADDRESS: &str = "3";
 const TEMP_BASE_ADDRESS: &str = "5";
-
-#[derive(Debug, PartialEq)]
-pub enum Segment {
-    ARGUMENT,
-    LOCAL,
-    STATIC,
-    CONSTANT,
-    THIS,
-    THAT,
-    POINTER,
-    TEMP,
-}
-
-impl Segment {
-    pub fn from_str(s: &str) -> Option<Segment> {
-        match s {
-            "argument" => Some(Segment::ARGUMENT),
-            "local" => Some(Segment::LOCAL),
-            "static" => Some(Segment::STATIC),
-            "constant" => Some(Segment::CONSTANT),
-            "this" => Some(Segment::THIS),
-            "that" => Some(Segment::THAT),
-            "pointer" => Some(Segment::POINTER),
-            "temp" => Some(Segment::TEMP),
-            _ => panic!("Invalid Segment"),
-        }
-    }
-
-    pub fn to_register_alias_str(segment: &str) -> String {
-        match Segment::from_str(segment) {
-            Some(Segment::LOCAL) => "LCL".to_string(),
-            Some(Segment::ARGUMENT) => "ARG".to_string(),
-            Some(Segment::THIS) => "THIS".to_string(),
-            Some(Segment::THAT) => "THAT".to_string(),
-            _ => panic!("{:?} has not alias name in register", segment),
-        }
-    }
-}
 
 #[derive(Debug, PartialEq)]
 pub enum ArithmeticCommand {
@@ -101,6 +64,7 @@ impl CodeWriter {
     }
 
     pub fn push(&mut self, segment: &str, index: &str) {
+        use segment::Segment;
         let mut new_code = match Segment::from_str(segment) {
             Some(Segment::CONSTANT) => CodeWriter::push_constant(index),
             Some(Segment::LOCAL)
@@ -119,6 +83,7 @@ impl CodeWriter {
         self.generated_code.append(&mut new_code);
     }
     pub fn pop(&mut self, segment: &str, index: &str) {
+        use segment::Segment;
         let mut new_code = match Segment::from_str(segment) {
             Some(Segment::LOCAL)
             | Some(Segment::ARGUMENT)
