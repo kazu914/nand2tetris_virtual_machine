@@ -1,5 +1,6 @@
 use std::{fs::OpenOptions, io::prelude::*};
 mod arithmetic_command;
+mod pop_code_generator;
 mod push_code_generator;
 mod segment;
 
@@ -63,11 +64,16 @@ impl CodeWriter {
             Some(Segment::LOCAL)
             | Some(Segment::ARGUMENT)
             | Some(Segment::THIS)
-            | Some(Segment::THAT) => {
-                CodeWriter::pop_segment(index, Segment::to_register_alias_str(segment).as_str())
+            | Some(Segment::THAT) => pop_code_generator::pop_segment(
+                index,
+                Segment::to_register_alias_str(segment).as_str(),
+            ),
+            Some(Segment::POINTER) => {
+                pop_code_generator::pop_pointer_and_temp(index, POINTER_BASE_ADDRESS)
             }
-            Some(Segment::POINTER) => CodeWriter::pop_pointer_and_temp(index, POINTER_BASE_ADDRESS),
-            Some(Segment::TEMP) => CodeWriter::pop_pointer_and_temp(index, TEMP_BASE_ADDRESS),
+            Some(Segment::TEMP) => {
+                pop_code_generator::pop_pointer_and_temp(index, TEMP_BASE_ADDRESS)
+            }
             Some(Segment::STATIC) => self.pop_static(index),
             _ => return,
         };
@@ -116,31 +122,6 @@ impl CodeWriter {
         res
     }
 
-    fn pop_segment(index: &str, segment: &str) -> Vec<String> {
-        let mut res = vec![
-            format!("@{}", segment),
-            "D=M".to_string(),
-            format!("@{}", index),
-            "D=D+A".to_string(),
-            "@R13".to_string(),
-            "M=D".to_string(),
-        ];
-        res.append(&mut CodeWriter::generate_pop_sp_to_r13_code());
-        res
-    }
-
-    fn pop_pointer_and_temp(index: &str, base_address: &str) -> Vec<String> {
-        let mut res = vec![
-            format!("@{}", base_address),
-            "D=A".to_string(),
-            format!("@{}", index),
-            "D=D+A".to_string(),
-            "@R13".to_string(),
-            "M=D".to_string(),
-        ];
-        res.append(&mut CodeWriter::generate_pop_sp_to_r13_code());
-        res
-    }
     fn pop_static(&self, index: &str) -> Vec<String> {
         let constant_name = CodeWriter::camel_case_filename_without_extention(&self.file_name);
         let mut res = vec![
@@ -149,19 +130,8 @@ impl CodeWriter {
             "R13".to_string(),
             "M=D".to_string(),
         ];
-        res.append(&mut CodeWriter::generate_pop_sp_to_r13_code());
+        res.append(&mut pop_code_generator::generate_pop_sp_to_r13_code());
         res
-    }
-
-    fn generate_pop_sp_to_r13_code() -> Vec<String> {
-        vec![
-            "@SP".to_string(),
-            "AM=M-1".to_string(),
-            "D=M".to_string(),
-            "@R13".to_string(),
-            "A=M".to_string(),
-            "M=D".to_string(),
-        ]
     }
 
     fn neg() -> Vec<String> {
