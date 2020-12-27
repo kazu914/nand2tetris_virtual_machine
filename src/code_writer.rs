@@ -1,5 +1,6 @@
 use std::{fs::OpenOptions, io::prelude::*};
 mod arithmetic_command;
+mod push_code_generator;
 mod segment;
 
 const POINTER_BASE_ADDRESS: &str = "3";
@@ -37,17 +38,20 @@ impl CodeWriter {
     pub fn push(&mut self, segment: &str, index: &str) {
         use segment::Segment;
         let mut new_code = match Segment::from_str(segment) {
-            Some(Segment::CONSTANT) => CodeWriter::push_constant(index),
+            Some(Segment::CONSTANT) => push_code_generator::push_constant(index),
             Some(Segment::LOCAL)
             | Some(Segment::ARGUMENT)
             | Some(Segment::THIS)
-            | Some(Segment::THAT) => {
-                CodeWriter::push_segment(index, Segment::to_register_alias_str(segment).as_str())
-            }
+            | Some(Segment::THAT) => push_code_generator::push_segment(
+                index,
+                Segment::to_register_alias_str(segment).as_str(),
+            ),
             Some(Segment::POINTER) => {
-                CodeWriter::push_pointer_and_temp(index, POINTER_BASE_ADDRESS)
+                push_code_generator::push_pointer_and_temp(index, POINTER_BASE_ADDRESS)
             }
-            Some(Segment::TEMP) => CodeWriter::push_pointer_and_temp(index, TEMP_BASE_ADDRESS),
+            Some(Segment::TEMP) => {
+                push_code_generator::push_pointer_and_temp(index, TEMP_BASE_ADDRESS)
+            }
             Some(Segment::STATIC) => self.push_static(index),
             _ => return,
         };
@@ -105,51 +109,11 @@ impl CodeWriter {
         self.generated_code.append(&mut new_code);
     }
 
-    fn push_constant(constant: &str) -> Vec<String> {
-        let mut res = vec![format!("@{}", constant), "D=A".to_string()];
-        res.append(&mut CodeWriter::generate_push_d_to_sp_code());
-        res
-    }
-
-    fn push_segment(index: &str, segment: &str) -> Vec<String> {
-        let mut res = vec![
-            format!("@{}", segment),
-            "D=M".to_string(),
-            format!("@{}", index),
-            "A=D+A".to_string(),
-            "D=M".to_string(),
-        ];
-        res.append(&mut CodeWriter::generate_push_d_to_sp_code());
-        res
-    }
-
-    fn push_pointer_and_temp(index: &str, base_address: &str) -> Vec<String> {
-        let mut res = vec![
-            format!("@{}", base_address),
-            "D=A".to_string(),
-            format!("@{}", index),
-            "A=D+A".to_string(),
-            "D=M".to_string(),
-        ];
-        res.append(&mut CodeWriter::generate_push_d_to_sp_code());
-        res
-    }
-
     fn push_static(&self, index: &str) -> Vec<String> {
         let constant_name = CodeWriter::camel_case_filename_without_extention(&self.file_name);
         let mut res = vec![format!("@{}.{}", constant_name, index), "D=M".to_string()];
-        res.append(&mut CodeWriter::generate_push_d_to_sp_code());
+        res.append(&mut push_code_generator::generate_push_d_to_sp_code());
         res
-    }
-
-    fn generate_push_d_to_sp_code() -> Vec<String> {
-        vec![
-            "@SP".to_string(),
-            "A=M".to_string(),
-            "M=D".to_string(),
-            "@SP".to_string(),
-            "M=M+1".to_string(),
-        ]
     }
 
     fn pop_segment(index: &str, segment: &str) -> Vec<String> {
@@ -312,7 +276,7 @@ mod test {
             "@SP".to_string(),
             "M=M+1".to_string(),
         ];
-        let result = CodeWriter::push_constant("7");
+        let result = push_code_generator::push_constant("7");
         assert_eq!(result, expected_result)
     }
 
