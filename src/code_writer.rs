@@ -75,6 +75,7 @@ pub struct CodeWriter {
     file_name: String,
     generated_code: Vec<String>,
     symbol_count: usize,
+    function_name_stack: Vec<String>,
 }
 
 impl CodeWriter {
@@ -83,6 +84,7 @@ impl CodeWriter {
             file_name,
             generated_code: vec![],
             symbol_count: 0,
+            function_name_stack: vec!["null".to_string()],
         }
     }
 
