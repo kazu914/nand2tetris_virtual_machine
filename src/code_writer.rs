@@ -1,4 +1,5 @@
 use std::{fs::OpenOptions, io::prelude::*};
+mod arithmetic_code_generator;
 mod arithmetic_command;
 mod pop_code_generator;
 mod push_code_generator;
@@ -92,24 +93,24 @@ impl CodeWriter {
     pub fn run_arichmetic_command(&mut self, arithmetic_command: &str) {
         use arithmetic_command::{ArithmeticCommand, ArithmeticCommand::*};
         let mut new_code = match ArithmeticCommand::from_str(arithmetic_command) {
-            Some(ADD) => CodeWriter::add(),
-            Some(SUB) => CodeWriter::sub(),
-            Some(NEG) => CodeWriter::neg(),
+            Some(ADD) => arithmetic_code_generator::add(),
+            Some(SUB) => arithmetic_code_generator::sub(),
+            Some(NEG) => arithmetic_code_generator::neg(),
             Some(EQ) => {
                 self.symbol_count += 1;
-                CodeWriter::eq(&self.symbol_count)
+                arithmetic_code_generator::eq(&self.symbol_count)
             }
             Some(GT) => {
                 self.symbol_count += 1;
-                CodeWriter::gt(&self.symbol_count)
+                arithmetic_code_generator::gt(&self.symbol_count)
             }
             Some(LT) => {
                 self.symbol_count += 1;
-                CodeWriter::lt(&self.symbol_count)
+                arithmetic_code_generator::lt(&self.symbol_count)
             }
-            Some(AND) => CodeWriter::and(),
-            Some(OR) => CodeWriter::or(),
-            Some(NOT) => CodeWriter::not(),
+            Some(AND) => arithmetic_code_generator::and(),
+            Some(OR) => arithmetic_code_generator::or(),
+            Some(NOT) => arithmetic_code_generator::not(),
             _ => return,
         };
         self.generated_code.append(&mut new_code);
@@ -132,94 +133,6 @@ impl CodeWriter {
         ];
         res.append(&mut pop_code_generator::generate_pop_sp_to_r13_code());
         res
-    }
-
-    fn neg() -> Vec<String> {
-        CodeWriter::make_one_operand_code("-")
-    }
-    fn not() -> Vec<String> {
-        CodeWriter::make_one_operand_code("!")
-    }
-
-    fn make_one_operand_code(operator: &str) -> Vec<String> {
-        vec![
-            "@SP".to_string(),
-            "M=M-1".to_string(),
-            "A=M".to_string(),
-            format!("M={}M", operator),
-            "@SP".to_string(),
-            "M=M+1".to_string(),
-        ]
-    }
-
-    fn add() -> Vec<String> {
-        CodeWriter::make_two_operands_code("+")
-    }
-
-    fn sub() -> Vec<String> {
-        CodeWriter::make_two_operands_code("-")
-    }
-
-    fn and() -> Vec<String> {
-        CodeWriter::make_two_operands_code("&")
-    }
-
-    fn or() -> Vec<String> {
-        CodeWriter::make_two_operands_code("|")
-    }
-
-    fn make_two_operands_code(operator: &str) -> Vec<String> {
-        vec![
-            "@SP".to_string(),
-            "M=M-1".to_string(),
-            "A=M".to_string(),
-            "D=M".to_string(),
-            "@SP".to_string(),
-            "M=M-1".to_string(),
-            "A=M".to_string(),
-            format!("M=M{}D", operator),
-            "@SP".to_string(),
-            "M=M+1".to_string(),
-        ]
-    }
-
-    fn eq(symbol_count: &usize) -> Vec<String> {
-        CodeWriter::make_condition_code(symbol_count, "JEQ")
-    }
-
-    fn gt(symbol_count: &usize) -> Vec<String> {
-        CodeWriter::make_condition_code(symbol_count, "JGT")
-    }
-
-    fn lt(symbol_count: &usize) -> Vec<String> {
-        CodeWriter::make_condition_code(symbol_count, "JLT")
-    }
-
-    fn make_condition_code(symbol_count: &usize, condition: &str) -> Vec<String> {
-        vec![
-            "@SP".to_string(),
-            "M=M-1".to_string(),
-            "A=M".to_string(),
-            "D=M".to_string(),
-            "@SP".to_string(),
-            "M=M-1".to_string(),
-            "A=M".to_string(),
-            "MD=M-D".to_string(), // M=x, D=y
-            format!("@IF_CONDITION.{}", symbol_count),
-            format!("D;{}", condition),
-            "@SP".to_string(),
-            "A=M".to_string(),
-            "M=0".to_string(),
-            format!("@IF_CONDITION.{}.FINAL", symbol_count),
-            "0;JMP".to_string(),
-            format!("(IF_CONDITION.{})", symbol_count),
-            "@SP".to_string(),
-            "A=M".to_string(),
-            "M=-1".to_string(),
-            format!("(IF_CONDITION.{}.FINAL)", symbol_count),
-            "@SP".to_string(),
-            "M=M+1".to_string(),
-        ]
     }
 
     fn camel_case_filename_without_extention(filename: &str) -> String {
