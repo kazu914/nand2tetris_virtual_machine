@@ -75,6 +75,7 @@ pub struct CodeWriter {
     file_name: String,
     generated_code: Vec<String>,
     symbol_count: usize,
+    function_name_stack: Vec<String>,
 }
 
 impl CodeWriter {
@@ -83,6 +84,7 @@ impl CodeWriter {
             file_name,
             generated_code: vec![],
             symbol_count: 0,
+            function_name_stack: vec!["null".to_string()],
         }
     }
 
@@ -130,6 +132,15 @@ impl CodeWriter {
             _ => return,
         };
         self.generated_code.append(&mut new_code);
+    }
+
+    pub fn write_label(&mut self, label_name: &str) {
+        let mut new_code = vec![format!(
+            "{}${}",
+            self.function_name_stack.last().unwrap(),
+            label_name
+        )];
+        self.generated_code.append(&mut new_code)
     }
 
     pub fn run_arichmetic_command(&mut self, arithmetic_command: &str) {
@@ -414,5 +425,12 @@ mod test {
         let expected_result = "Filename";
         let result = CodeWriter::camel_case_filename_without_extention("filename.vm");
         assert_eq!(result, expected_result)
+    }
+    #[test]
+    fn write_label() {
+        let expected_result = ["null$b".to_string()];
+        let mut code_writer = CodeWriter::new("a".to_string());
+        code_writer.write_label("b");
+        assert_eq!(code_writer.generated_code, expected_result)
     }
 }
