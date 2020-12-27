@@ -1,6 +1,7 @@
 use std::{fs::OpenOptions, io::prelude::*};
 mod arithmetic_code_generator;
 mod arithmetic_command;
+mod constant;
 mod helper;
 mod pop_code_generator;
 mod push_code_generator;
@@ -64,27 +65,7 @@ impl CodeWriter {
         self.generated_code.append(&mut new_code);
     }
     pub fn pop(&mut self, segment: &str, index: &str) {
-        use segment::Segment;
-        let mut new_code = match Segment::from_str(segment) {
-            Some(Segment::LOCAL)
-            | Some(Segment::ARGUMENT)
-            | Some(Segment::THIS)
-            | Some(Segment::THAT) => pop_code_generator::pop_segment(
-                index,
-                Segment::to_register_alias_str(segment).as_str(),
-            ),
-            Some(Segment::POINTER) => {
-                pop_code_generator::pop_pointer_and_temp(index, POINTER_BASE_ADDRESS)
-            }
-            Some(Segment::TEMP) => {
-                pop_code_generator::pop_pointer_and_temp(index, TEMP_BASE_ADDRESS)
-            }
-            Some(Segment::STATIC) => {
-                let constant_name = helper::camel_case_filename_without_extention(&self.file_name);
-                pop_code_generator::pop_static(index, &constant_name)
-            }
-            _ => return,
-        };
+        let mut new_code = pop_code_generator::generate_pop_code(segment, index, &self.file_name);
         self.generated_code.append(&mut new_code);
     }
 
