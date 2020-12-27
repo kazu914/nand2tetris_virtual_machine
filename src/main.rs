@@ -15,9 +15,9 @@ fn read_lines_from_file(filename: &str) -> Vec<String> {
 }
 
 fn main() {
-    let commands = read_lines_from_file("../../projects/07/StackArithmetic/StackTest/StackTest.vm");
+    let commands = read_lines_from_file("../../projects/07/MemoryAccess/StaticTest/StaticTest.vm");
     let mut parser = parser::Parser::new(commands);
-    let mut code_writer = code_writer::CodeWriter::new("tmp.asm".to_string());
+    let mut code_writer = code_writer::CodeWriter::new("StaticTest.vm".to_string());
     while parser.has_more_commands {
         parser.advance();
         match parser.command_type {
@@ -28,8 +28,12 @@ fn main() {
                 parser.arg1.as_deref().unwrap(),
                 parser.arg2.as_deref().unwrap(),
             ),
+            Some(parser::CommandType::POP) => code_writer.pop(
+                parser.arg1.as_deref().unwrap(),
+                parser.arg2.as_deref().unwrap(),
+            ),
             _ => (),
         }
     }
-    code_writer.output();
+    code_writer.output("./output.asm");
 }
