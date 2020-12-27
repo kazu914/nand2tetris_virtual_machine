@@ -23,6 +23,16 @@ pub fn pop_pointer_and_temp(index: &str, base_address: &str) -> Vec<String> {
     res.append(&mut generate_pop_sp_to_r13_code());
     res
 }
+pub fn pop_static(index: &str, constant_name: &str) -> Vec<String> {
+    let mut res = vec![
+        format!("@{}.{}", constant_name, index),
+        "D=A".to_string(),
+        "R13".to_string(),
+        "M=D".to_string(),
+    ];
+    res.append(&mut generate_pop_sp_to_r13_code());
+    res
+}
 
 pub fn generate_pop_sp_to_r13_code() -> Vec<String> {
     vec![

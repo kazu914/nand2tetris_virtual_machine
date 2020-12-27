@@ -16,6 +16,12 @@ pub fn push_segment(index: &str, segment: &str) -> Vec<String> {
     res
 }
 
+pub fn push_static(index: &str, constant_name: &str) -> Vec<String> {
+    let mut res = vec![format!("@{}.{}", constant_name, index), "D=M".to_string()];
+    res.append(&mut generate_push_d_to_sp_code());
+    res
+}
+
 pub fn push_pointer_and_temp(index: &str, base_address: &str) -> Vec<String> {
     let mut res = vec![
         format!("@{}", base_address),

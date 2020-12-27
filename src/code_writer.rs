@@ -1,6 +1,7 @@
 use std::{fs::OpenOptions, io::prelude::*};
 mod arithmetic_code_generator;
 mod arithmetic_command;
+mod helper;
 mod pop_code_generator;
 mod push_code_generator;
 mod segment;
@@ -54,7 +55,10 @@ impl CodeWriter {
             Some(Segment::TEMP) => {
                 push_code_generator::push_pointer_and_temp(index, TEMP_BASE_ADDRESS)
             }
-            Some(Segment::STATIC) => self.push_static(index),
+            Some(Segment::STATIC) => {
+                let constant_name = helper::camel_case_filename_without_extention(&self.file_name);
+                push_code_generator::push_static(index, &constant_name)
+            }
             _ => return,
         };
         self.generated_code.append(&mut new_code);
@@ -75,7 +79,10 @@ impl CodeWriter {
             Some(Segment::TEMP) => {
                 pop_code_generator::pop_pointer_and_temp(index, TEMP_BASE_ADDRESS)
             }
-            Some(Segment::STATIC) => self.pop_static(index),
+            Some(Segment::STATIC) => {
+                let constant_name = helper::camel_case_filename_without_extention(&self.file_name);
+                pop_code_generator::pop_static(index, &constant_name)
+            }
             _ => return,
         };
         self.generated_code.append(&mut new_code);
@@ -114,34 +121,6 @@ impl CodeWriter {
             _ => return,
         };
         self.generated_code.append(&mut new_code);
-    }
-
-    fn push_static(&self, index: &str) -> Vec<String> {
-        let constant_name = CodeWriter::camel_case_filename_without_extention(&self.file_name);
-        let mut res = vec![format!("@{}.{}", constant_name, index), "D=M".to_string()];
-        res.append(&mut push_code_generator::generate_push_d_to_sp_code());
-        res
-    }
-
-    fn pop_static(&self, index: &str) -> Vec<String> {
-        let constant_name = CodeWriter::camel_case_filename_without_extention(&self.file_name);
-        let mut res = vec![
-            format!("@{}.{}", constant_name, index),
-            "D=A".to_string(),
-            "R13".to_string(),
-            "M=D".to_string(),
-        ];
-        res.append(&mut pop_code_generator::generate_pop_sp_to_r13_code());
-        res
-    }
-
-    fn camel_case_filename_without_extention(filename: &str) -> String {
-        let without_extention = filename.replace(".vm", "").to_lowercase();
-        let mut file_name_char = without_extention.chars();
-        match file_name_char.next() {
-            None => String::new(),
-            Some(c) => c.to_uppercase().collect::<String>() + file_name_char.as_str(),
-        }
     }
 }
 
@@ -203,12 +182,6 @@ mod test {
         assert_eq!(code_writer.generated_code, expected_result)
     }
 
-    #[test]
-    fn camel_case_filename_without_extention() {
-        let expected_result = "Filename";
-        let result = CodeWriter::camel_case_filename_without_extention("filename.vm");
-        assert_eq!(result, expected_result)
-    }
     #[test]
     fn write_label() {
         let expected_result = ["null$b".to_string()];
