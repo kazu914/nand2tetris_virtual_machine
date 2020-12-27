@@ -134,6 +134,15 @@ impl CodeWriter {
         self.generated_code.append(&mut new_code);
     }
 
+    pub fn write_label(&mut self, label_name: &str) {
+        let mut new_code = vec![format!(
+            "{}${}",
+            self.function_name_stack.last().unwrap(),
+            label_name
+        )];
+        self.generated_code.append(&mut new_code)
+    }
+
     pub fn run_arichmetic_command(&mut self, arithmetic_command: &str) {
         use self::ArithmeticCommand::*;
         let mut new_code = match ArithmeticCommand::from_str(arithmetic_command) {
@@ -416,5 +425,12 @@ mod test {
         let expected_result = "Filename";
         let result = CodeWriter::camel_case_filename_without_extention("filename.vm");
         assert_eq!(result, expected_result)
+    }
+    #[test]
+    fn write_label() {
+        let expected_result = ["null$b".to_string()];
+        let mut code_writer = CodeWriter::new("a".to_string());
+        code_writer.write_label("b");
+        assert_eq!(code_writer.generated_code, expected_result)
     }
 }
