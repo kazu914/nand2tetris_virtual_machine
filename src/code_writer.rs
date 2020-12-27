@@ -7,9 +7,6 @@ mod pop_code_generator;
 mod push_code_generator;
 mod segment;
 
-const POINTER_BASE_ADDRESS: &str = "3";
-const TEMP_BASE_ADDRESS: &str = "5";
-
 pub struct CodeWriter {
     file_name: String,
     generated_code: Vec<String>,
@@ -40,30 +37,10 @@ impl CodeWriter {
     }
 
     pub fn push(&mut self, segment: &str, index: &str) {
-        use segment::Segment;
-        let mut new_code = match Segment::from_str(segment) {
-            Some(Segment::CONSTANT) => push_code_generator::push_constant(index),
-            Some(Segment::LOCAL)
-            | Some(Segment::ARGUMENT)
-            | Some(Segment::THIS)
-            | Some(Segment::THAT) => push_code_generator::push_segment(
-                index,
-                Segment::to_register_alias_str(segment).as_str(),
-            ),
-            Some(Segment::POINTER) => {
-                push_code_generator::push_pointer_and_temp(index, POINTER_BASE_ADDRESS)
-            }
-            Some(Segment::TEMP) => {
-                push_code_generator::push_pointer_and_temp(index, TEMP_BASE_ADDRESS)
-            }
-            Some(Segment::STATIC) => {
-                let constant_name = helper::camel_case_filename_without_extention(&self.file_name);
-                push_code_generator::push_static(index, &constant_name)
-            }
-            _ => return,
-        };
+        let mut new_code = push_code_generator::generate_push_code(segment, index, &self.file_name);
         self.generated_code.append(&mut new_code);
     }
+
     pub fn pop(&mut self, segment: &str, index: &str) {
         let mut new_code = pop_code_generator::generate_pop_code(segment, index, &self.file_name);
         self.generated_code.append(&mut new_code);
@@ -108,20 +85,6 @@ impl CodeWriter {
 #[cfg(test)]
 mod test {
     use super::*;
-    #[test]
-    fn push_constant() {
-        let expected_result = vec![
-            "@7".to_string(),
-            "D=A".to_string(),
-            "@SP".to_string(),
-            "A=M".to_string(),
-            "M=D".to_string(),
-            "@SP".to_string(),
-            "M=M+1".to_string(),
-        ];
-        let result = push_code_generator::push_constant("7");
-        assert_eq!(result, expected_result)
-    }
 
     #[test]
     fn push_local() {
