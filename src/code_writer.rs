@@ -1,38 +1,9 @@
 use std::{fs::OpenOptions, io::prelude::*};
+mod arithmetic_command;
 mod segment;
 
 const POINTER_BASE_ADDRESS: &str = "3";
 const TEMP_BASE_ADDRESS: &str = "5";
-
-#[derive(Debug, PartialEq)]
-pub enum ArithmeticCommand {
-    ADD,
-    SUB,
-    NEG,
-    EQ,
-    GT,
-    LT,
-    AND,
-    OR,
-    NOT,
-}
-
-impl ArithmeticCommand {
-    pub fn from_str(s: &str) -> Option<ArithmeticCommand> {
-        match s {
-            "add" => Some(ArithmeticCommand::ADD),
-            "sub" => Some(ArithmeticCommand::SUB),
-            "neg" => Some(ArithmeticCommand::NEG),
-            "eq" => Some(ArithmeticCommand::EQ),
-            "gt" => Some(ArithmeticCommand::GT),
-            "lt" => Some(ArithmeticCommand::LT),
-            "and" => Some(ArithmeticCommand::AND),
-            "or" => Some(ArithmeticCommand::OR),
-            "not" => Some(ArithmeticCommand::NOT),
-            _ => panic!("Invalid ArithmeticCommand"),
-        }
-    }
-}
 
 pub struct CodeWriter {
     file_name: String,
@@ -109,7 +80,7 @@ impl CodeWriter {
     }
 
     pub fn run_arichmetic_command(&mut self, arithmetic_command: &str) {
-        use self::ArithmeticCommand::*;
+        use arithmetic_command::{ArithmeticCommand, ArithmeticCommand::*};
         let mut new_code = match ArithmeticCommand::from_str(arithmetic_command) {
             Some(ADD) => CodeWriter::add(),
             Some(SUB) => CodeWriter::sub(),
