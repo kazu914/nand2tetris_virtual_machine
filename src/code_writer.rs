@@ -55,6 +55,18 @@ impl CodeWriter {
         self.generated_code.append(&mut new_code)
     }
 
+    pub fn write_go_to(&mut self, label_name: &str) {
+        let mut new_code = vec![
+            format!(
+                "@{}${}",
+                self.function_name_stack.last().unwrap(),
+                label_name
+            ),
+            "0;JMP".to_string(),
+        ];
+        self.generated_code.append(&mut new_code)
+    }
+
     pub fn run_arichmetic_command(&mut self, arithmetic_command: &str) {
         use arithmetic_command::{ArithmeticCommand, ArithmeticCommand::*};
         let mut new_code = match ArithmeticCommand::from_str(arithmetic_command) {
@@ -131,6 +143,14 @@ mod test {
         let expected_result = ["null$b".to_string()];
         let mut code_writer = CodeWriter::new("a".to_string());
         code_writer.write_label("b");
+        assert_eq!(code_writer.generated_code, expected_result)
+    }
+
+    #[test]
+    fn write_go_to() {
+        let expected_result = ["@null$b".to_string(), "0;JMP".to_string()];
+        let mut code_writer = CodeWriter::new("a".to_string());
+        code_writer.write_go_to("b");
         assert_eq!(code_writer.generated_code, expected_result)
     }
 }
