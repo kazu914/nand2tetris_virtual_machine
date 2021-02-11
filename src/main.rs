@@ -32,6 +32,12 @@ fn main() {
                 parser.arg1.as_deref().unwrap(),
                 parser.arg2.as_deref().unwrap(),
             ),
+            Some(parser::CommandType::GOTO) => {
+                code_writer.write_go_to(parser.arg1.as_deref().unwrap())
+            }
+            Some(parser::CommandType::IF) => {
+                code_writer.write_if_go_to(parser.arg1.as_deref().unwrap())
+            }
             _ => (),
         }
     }
