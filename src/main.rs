@@ -32,6 +32,9 @@ fn main() {
                 parser.arg1.as_deref().unwrap(),
                 parser.arg2.as_deref().unwrap(),
             ),
+            Some(parser::CommandType::LABEL) => {
+                code_writer.write_label(parser.arg1.as_deref().unwrap())
+            }
             Some(parser::CommandType::GOTO) => {
                 code_writer.write_go_to(parser.arg1.as_deref().unwrap())
             }
