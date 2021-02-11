@@ -4,6 +4,7 @@ use virtual_machine::parser;
 use std::{
     env,
     fs::File,
+    io,
     io::{prelude::*, BufReader},
     process,
 };
@@ -22,12 +23,18 @@ impl Config {
     }
 }
 
-fn read_lines_from_file(filename: &str) -> Vec<String> {
-    let file = File::open(filename).expect("Failed to open");
+fn read_lines_from_file(filename: &str) -> Result<Vec<String>, io::Error> {
+    let file = File::open(filename);
+
+    let file = match file {
+        Ok(file) => file,
+        Err(e) => return Err(e),
+    };
     let buf = BufReader::new(file);
-    buf.lines()
+    Ok(buf
+        .lines()
         .map(|l| l.expect("Failed to read line"))
-        .collect()
+        .collect())
 }
 
 fn main() {
@@ -37,7 +44,10 @@ fn main() {
         process::exit(1);
     });
 
-    let commands = read_lines_from_file(&config.filename);
+    let commands = read_lines_from_file(&config.filename).unwrap_or_else(|err| {
+        println!("{}", err);
+        process::exit(1)
+    });
 
     let mut parser = parser::Parser::new(commands);
     let mut code_writer = code_writer::CodeWriter::new("StaticTest.vm".to_string());
