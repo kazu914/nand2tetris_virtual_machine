@@ -77,7 +77,7 @@ impl CodeWriter {
                 self.function_name_stack.last().unwrap(),
                 label_name
             ),
-            "D;JEQ".to_string(),
+            "D;JNE".to_string(),
         ];
 
         self.generated_code.append(&mut new_code);
@@ -177,7 +177,7 @@ mod test {
             "AM=M-1".to_string(),
             "D=M".to_string(),
             "@null$b".to_string(),
-            "D;JEQ".to_string(),
+            "D;JNE".to_string(),
         ];
         let mut code_writer = CodeWriter::new("a".to_string());
         code_writer.write_if_go_to("b");
