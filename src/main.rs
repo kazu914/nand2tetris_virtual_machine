@@ -2,9 +2,25 @@ use virtual_machine::code_writer;
 use virtual_machine::parser;
 
 use std::{
+    env,
     fs::File,
     io::{prelude::*, BufReader},
+    process,
 };
+
+struct Config {
+    filename: String,
+}
+
+impl Config {
+    fn new(args: &[String]) -> Result<Config, &'static str> {
+        if args.len() < 2 {
+            return Err("Filename is not provided");
+        }
+        let filename = args[1].clone();
+        Ok(Config { filename })
+    }
+}
 
 fn read_lines_from_file(filename: &str) -> Vec<String> {
     let file = File::open(filename).expect("Failed to open");
@@ -15,7 +31,14 @@ fn read_lines_from_file(filename: &str) -> Vec<String> {
 }
 
 fn main() {
-    let commands = read_lines_from_file("../../projects/07/MemoryAccess/StaticTest/StaticTest.vm");
+    let args: Vec<String> = env::args().collect();
+    let config = Config::new(&args).unwrap_or_else(|err| {
+        println!("Problem parsing arguments: {}", err);
+        process::exit(1);
+    });
+
+    let commands = read_lines_from_file(&config.filename);
+
     let mut parser = parser::Parser::new(commands);
     let mut code_writer = code_writer::CodeWriter::new("StaticTest.vm".to_string());
     while parser.has_more_commands {
