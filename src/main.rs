@@ -50,7 +50,7 @@ fn main() {
     });
 
     let mut parser = parser::Parser::new(commands);
-    let mut code_writer = code_writer::CodeWriter::new("StaticTest.vm".to_string());
+    let mut code_writer = code_writer::CodeWriter::new(config.filename.clone());
     while parser.has_more_commands {
         parser.advance();
         match parser.command_type {
@@ -77,5 +77,5 @@ fn main() {
             _ => (),
         }
     }
-    code_writer.output("./output.asm");
+    code_writer.output(&config.filename.replace(".vm", ".asm"));
 }
