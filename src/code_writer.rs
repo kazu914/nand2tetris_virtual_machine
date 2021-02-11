@@ -156,7 +156,7 @@ mod test {
 
     #[test]
     fn write_label() {
-        let expected_result = ["null$b".to_string()];
+        let expected_result = ["(null$b)".to_string()];
         let mut code_writer = CodeWriter::new("a".to_string());
         code_writer.write_label("b");
         assert_eq!(code_writer.generated_code, expected_result)
