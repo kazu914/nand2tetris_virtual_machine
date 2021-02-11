@@ -48,7 +48,7 @@ impl CodeWriter {
 
     pub fn write_label(&mut self, label_name: &str) {
         let mut new_code = vec![format!(
-            "{}${}",
+            "({}${})",
             self.function_name_stack.last().unwrap(),
             label_name
         )];
