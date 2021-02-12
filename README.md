@@ -22,4 +22,4 @@
 |:heavy_check_mark:|プログラムフロー|Fibonacci|
 |:black_square_button:|関数呼び出し|SimpleFunction|
 |:black_square_button:|関数呼び出し|FibonacciElement|
-|:black_square_button:|関数呼び出し:|関数呼び出し|StaticsTest|
+|:black_square_button:|関数呼び出し|StaticsTest|
