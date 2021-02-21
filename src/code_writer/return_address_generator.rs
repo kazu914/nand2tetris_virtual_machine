@@ -9,7 +9,7 @@ impl ReturnAddressGenerator {
 
     pub fn generate_new_return_address(&mut self) -> String {
         self.counter += 1;
-        format!("return_address.{}", self.counter)
+        format!("Return_address.{}", self.counter)
     }
 }
 
@@ -21,7 +21,7 @@ mod test {
     fn generate_new_return_address() {
         let mut return_address_generator = ReturnAddressGenerator::new();
         let return_address: String = return_address_generator.generate_new_return_address();
-        assert_eq!("return_address.1", return_address)
+        assert_eq!("Return_address.1", return_address)
     }
 
     #[test]
