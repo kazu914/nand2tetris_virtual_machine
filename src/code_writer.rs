@@ -5,6 +5,7 @@ mod constant;
 mod helper;
 mod pop_code_generator;
 mod push_code_generator;
+mod return_address_generator;
 mod segment;
 
 pub struct CodeWriter {
@@ -12,6 +13,7 @@ pub struct CodeWriter {
     generated_code: Vec<String>,
     symbol_count: usize,
     function_name_stack: Vec<String>,
+    return_address_generator: return_address_generator::ReturnAddressGenerator,
 }
 
 impl CodeWriter {
@@ -21,6 +23,7 @@ impl CodeWriter {
             generated_code: vec![],
             symbol_count: 0,
             function_name_stack: vec!["null".to_string()],
+            return_address_generator: return_address_generator::ReturnAddressGenerator::new(),
         }
     }
 
@@ -80,6 +83,57 @@ impl CodeWriter {
             "D;JNE".to_string(),
         ];
 
+        self.generated_code.append(&mut new_code);
+    }
+
+    pub fn write_call(&mut self, function_name: &str, n_arg: &str) {
+        let return_address = self.return_address_generator.generate_new_return_address();
+        let mut new_code: Vec<String> = vec![];
+
+        let mut push_code: Vec<String> = vec!["D=M".to_string()];
+
+        push_code.append(&mut push_code_generator::generate_push_d_to_sp_code());
+
+        // return_address,LCL,ARG,THIS,THATをstackにpush
+        new_code.append(&mut vec![format!("@{}", return_address), "D=A".to_string()]);
+        new_code.append(&mut push_code_generator::generate_push_d_to_sp_code());
+        new_code.push("@LCL".to_string());
+        new_code.append(&mut push_code.clone());
+        new_code.push("@ARG".to_string());
+        new_code.append(&mut push_code.clone());
+        new_code.push("@THIS".to_string());
+        new_code.append(&mut push_code.clone());
+        new_code.push("@THAT".to_string());
+        new_code.append(&mut push_code.clone());
+
+        // ARG = SP - n_arg - 5
+        new_code.append(&mut vec![
+            "@SP".to_string(),
+            "D=M".to_string(),
+            format!("@{}", n_arg),
+            "D=D-A".to_string(),
+            "@5".to_string(),
+            "D=D-A".to_string(),
+            "@ARG".to_string(),
+            "M=D".to_string(),
+        ]);
+
+        // LCL = SP
+        new_code.append(&mut vec![
+            "@SP".to_string(),
+            "D=M".to_string(),
+            "@LCL".to_string(),
+            "M=D".to_string(),
+        ]);
+
+        // function_nameに制御を移す
+        new_code.append(&mut vec![
+            format!("@{}", function_name),
+            "0;JMP".to_string(),
+        ]);
+
+        // return_addressを書いておく
+        new_code.push(format!("({})", return_address));
         self.generated_code.append(&mut new_code);
     }
 
