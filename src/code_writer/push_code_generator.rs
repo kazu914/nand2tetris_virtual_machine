@@ -57,7 +57,7 @@ fn push_pointer_and_temp(index: &str, base_address: &str) -> Vec<String> {
     res
 }
 
-fn generate_push_d_to_sp_code() -> Vec<String> {
+pub fn generate_push_d_to_sp_code() -> Vec<String> {
     vec![
         "@SP".to_string(),
         "A=M".to_string(),
