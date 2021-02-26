@@ -175,6 +175,8 @@ impl CodeWriter {
 
         self.generated_code.append(&mut new_code);
     }
+
+    pub fn write_return(&mut self) {}
 }
 
 #[cfg(test)]

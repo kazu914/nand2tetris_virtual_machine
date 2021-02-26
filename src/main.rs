@@ -82,7 +82,8 @@ fn main() {
                 parser.arg1.as_deref().unwrap(),
                 parser.arg2.as_deref().unwrap(),
             ),
-            _ => (),
+            Some(parser::CommandType::RETURN) => code_writer.write_return(),
+            None => (),
         }
     }
     code_writer.output(&config.filename.replace(".vm", ".asm"));
