@@ -235,7 +235,11 @@ impl CodeWriter {
             "M=D".to_string(),
         ]);
 
-        new_code.append(&mut vec!["@RET".to_string(), "0;JMP".to_string()]);
+        new_code.append(&mut vec![
+            "@RET".to_string(),
+            "A=M".to_string(),
+            "0;JMP".to_string(),
+        ]);
         self.generated_code.append(&mut new_code);
     }
 }
