@@ -175,6 +175,69 @@ impl CodeWriter {
 
         self.generated_code.append(&mut new_code);
     }
+
+    pub fn write_return(&mut self) {
+        let mut new_code = vec![
+            "@LCL".to_string(),
+            "D=M".to_string(),
+            "@FRAME".to_string(),
+            "M=D".to_string(),
+            "@5".to_string(),
+            "A=D-A".to_string(),
+            "D=M".to_string(),
+            "@RET".to_string(),
+            "M=D".to_string(),
+        ];
+        new_code.append(&mut pop_code_generator::generate_pop_code(
+            "argument", "0", "",
+        ));
+        new_code.append(&mut vec![
+            "@ARG".to_string(),
+            "D=M".to_string(),
+            "@SP".to_string(),
+            "M=D+1".to_string(),
+        ]);
+
+        new_code.append(&mut vec![
+            "@FRAME".to_string(),
+            "D=M".to_string(),
+            "@1".to_string(),
+            "A=D-A".to_string(),
+            "D=M".to_string(),
+            "@THAT".to_string(),
+            "M=D".to_string(),
+        ]);
+        new_code.append(&mut vec![
+            "@FRAME".to_string(),
+            "D=M".to_string(),
+            "@2".to_string(),
+            "A=D-A".to_string(),
+            "D=M".to_string(),
+            "@THIS".to_string(),
+            "M=D".to_string(),
+        ]);
+        new_code.append(&mut vec![
+            "@FRAME".to_string(),
+            "D=M".to_string(),
+            "@3".to_string(),
+            "A=D-A".to_string(),
+            "D=M".to_string(),
+            "@ARG".to_string(),
+            "M=D".to_string(),
+        ]);
+        new_code.append(&mut vec![
+            "@FRAME".to_string(),
+            "D=M".to_string(),
+            "@4".to_string(),
+            "A=D-A".to_string(),
+            "D=M".to_string(),
+            "@LCL".to_string(),
+            "M=D".to_string(),
+        ]);
+
+        new_code.append(&mut vec!["@RET".to_string(), "0;JMP".to_string()]);
+        self.generated_code.append(&mut new_code);
+    }
 }
 
 #[cfg(test)]
