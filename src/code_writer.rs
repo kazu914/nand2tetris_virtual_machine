@@ -162,6 +162,8 @@ impl CodeWriter {
         };
         self.generated_code.append(&mut new_code);
     }
+
+    pub fn write_function(&mut self, _function_name: &str, _num_locals: &str) {}
 }
 
 #[cfg(test)]
