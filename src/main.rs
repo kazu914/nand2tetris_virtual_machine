@@ -78,6 +78,10 @@ fn main() {
                 parser.arg1.as_deref().unwrap(),
                 parser.arg2.as_deref().unwrap(),
             ),
+            Some(parser::CommandType::FUNCTION) => code_writer.write_function(
+                parser.arg1.as_deref().unwrap(),
+                parser.arg2.as_deref().unwrap(),
+            ),
             _ => (),
         }
     }
