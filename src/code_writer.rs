@@ -167,7 +167,7 @@ impl CodeWriter {
         let mut new_code: Vec<String> = vec![];
         self.function_name_stack.push(function_name.to_string());
         new_code.push(format!("({})", function_name));
-        let mut push_zero_to_stack = vec!["@0".to_string()];
+        let mut push_zero_to_stack = vec!["@0".to_string(), "D=A".to_string()];
         push_zero_to_stack.append(&mut push_code_generator::generate_push_d_to_sp_code());
         for _ in 0..num_locals.parse::<i32>().unwrap() {
             new_code.append(&mut push_zero_to_stack.clone());
@@ -235,7 +235,11 @@ impl CodeWriter {
             "M=D".to_string(),
         ]);
 
-        new_code.append(&mut vec!["@RET".to_string(), "0;JMP".to_string()]);
+        new_code.append(&mut vec![
+            "@RET".to_string(),
+            "A=M".to_string(),
+            "0;JMP".to_string(),
+        ]);
         self.generated_code.append(&mut new_code);
     }
 }
@@ -319,12 +323,14 @@ mod test {
         let expected_result = [
             "(Functionname)".to_string(),
             "@0".to_string(),
+            "D=A".to_string(),
             "@SP".to_string(),
             "A=M".to_string(),
             "M=D".to_string(),
             "@SP".to_string(),
             "M=M+1".to_string(),
             "@0".to_string(),
+            "D=A".to_string(),
             "@SP".to_string(),
             "A=M".to_string(),
             "M=D".to_string(),

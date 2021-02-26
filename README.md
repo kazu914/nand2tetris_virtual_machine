@@ -20,6 +20,6 @@
 |:-:|:-:|:-:|
 |:heavy_check_mark:|プログラムフロー|BasicLoop|
 |:heavy_check_mark:|プログラムフロー|Fibonacci|
-|:black_square_button:|関数呼び出し|SimpleFunction|
+|:heavy_check_mark:|関数呼び出し|SimpleFunction|
 |:black_square_button:|関数呼び出し|FibonacciElement|
 |:black_square_button:|関数呼び出し|StaticsTest|
