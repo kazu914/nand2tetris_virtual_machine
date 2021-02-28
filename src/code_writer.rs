@@ -39,6 +39,12 @@ impl CodeWriter {
         }
     }
 
+    pub fn write_init(&mut self) {
+        // TODO bootstrapコードを書く
+        let mut new_code: Vec<String> = vec![];
+        self.generated_code.append(&mut new_code);
+    }
+
     pub fn push(&mut self, segment: &str, index: &str) {
         let mut new_code = push_code_generator::generate_push_code(segment, index, &self.file_name);
         self.generated_code.append(&mut new_code);
